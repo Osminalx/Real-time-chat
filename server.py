@@ -1,19 +1,39 @@
 import socket
+import threading
+
+def handle_client(client_socket):
+    while True:
+        try:
+            message = client_socket.recv(1024)
+            if not message:
+                break
+            print("Mensaje recibido:", message.decode())
+            broadcast(message, client_socket)
+        except Exception as e:
+            print("Error:", e)
+            break
+
+def broadcast(message, sender_socket):
+    for client in clients:
+        if client != sender_socket:
+            try:
+                client.send(message)
+            except:
+                clients.remove(client)
 
 my_socket = socket.socket()
-my_socket.bind(('localhost',8000))
+my_socket.bind(('localhost', 8000))
 
 my_socket.listen(5)
 
-on = True
+print("Esperando conexiones...")
 
-while on:
-    connection, addr = my_socket.accept()
-    print("Nueva conexion")
-    print(addr)
+clients = []
 
-    petition = connection.recv(1024)
-    print(petition)
+while True:
+    client_socket, addr = my_socket.accept()
+    print("Cliente conectado desde:", addr)
+    clients.append(client_socket)
 
-    connection.send(b"Hola desde el server")
-    connection.close()
+    client_handler = threading.Thread(target=handle_client, args=(client_socket,))
+    client_handler.start()
