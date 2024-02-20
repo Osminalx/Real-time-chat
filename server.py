@@ -1,9 +1,9 @@
 import socket
 import threading
 
-class chatManager:
-    def __init__(self) -> None:
-        pass
+class ChatManager:
+    def __init__(self):
+        self.clients = []
 
     def _broadcast(self, message, sender_socket):
         for client in self.clients:
@@ -25,21 +25,23 @@ class chatManager:
                 print("Error:", e)
                 break
 
+class Server:
+    def __init__(self):
+        self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server.bind(('localhost', 8000))
+        self.server.listen(5)
+        print("Esperando conexiones...")
 
-my_socket = socket.socket()
-my_socket.bind(('localhost', 8000))
+    def start(self):
+        while True:
+            client_socket, addr = self.server.accept()
+            print("Cliente conectado desde:", addr)
+            chat_manager.clients.append(client_socket)
 
-my_socket.listen(5)
+            client_handler = threading.Thread(target=chat_manager.handle_client, args=(client_socket,))
+            client_handler.start()
 
-print("Esperando conexiones...")
-
-chat_manager = chatManager()
-chat_manager.clients = []
-
-while True:
-    client_socket, addr = my_socket.accept()
-    print("Cliente conectado desde:", addr)
-    chat_manager.clients.append(client_socket)
-
-    client_handler = threading.Thread(target=chat_manager.handle_client, args=(client_socket,))
-    client_handler.start()
+if __name__ == "__main__":
+    chat_manager = ChatManager()
+    server = Server()
+    server.start()

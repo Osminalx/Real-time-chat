@@ -1,26 +1,42 @@
 import socket
 import threading
 
-def receive_messages():
-    while True:
-        try:
-            message = my_socket.recv(1024)
-            if not message:
+class Cliente:
+    def __init__(self):
+        print("Conectando al servidor...\n")
+        self.my_socket = socket.socket()
+        self.my_socket.connect(('localhost', 8000))
+        print("Conectado al Servidor!\n")
+
+    def enviar(self):
+        message = input("Yo:")
+        self.my_socket.send(message.encode())
+
+    def recibir(self):
+        while True:
+            try:
+                message = self.my_socket.recv(1024)
+                if not message:
+                    break
+                print("Servidor:", message.decode())
+            except Exception as e:
+                print("Error:", e)
                 break
-            print("Servidor:", message.decode())
-        except Exception as e:
-            print("Error:", e)
-            break
 
-my_socket = socket.socket()
-my_socket.connect(('localhost', 8000))
+    def cerrar_socket(self):
+        self.my_socket.close()
+        print("Socket cerrado.\n")
 
-receive_thread = threading.Thread(target=receive_messages)
-receive_thread.start()
+def main():
+    cliente = Cliente()
+    receive_thread = threading.Thread(target=cliente.recibir)
+    receive_thread.start()
 
+    while True:
+        cliente.enviar()
 
-while True:
-    message = input("Yo:")
-    my_socket.send(message.encode())
+    cliente.cerrar_socket()
 
-my_socket.close()
+if __name__ == "__main__":
+    main()
+
