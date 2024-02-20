@@ -1,18 +1,18 @@
 import socket
 import threading
 
-class Cliente:
+class Client:
     def __init__(self):
         print("Conectando al servidor...\n")
         self.my_socket = socket.socket()
         self.my_socket.connect(('localhost', 8000))
         print("Conectado al Servidor!\n")
 
-    def enviar(self):
+    def send(self):
         message = input("Yo:")
         self.my_socket.send(message.encode())
 
-    def recibir(self):
+    def recieve(self):
         while True:
             try:
                 message = self.my_socket.recv(1024)
@@ -23,19 +23,19 @@ class Cliente:
                 print("Error:", e)
                 break
 
-    def cerrar_socket(self):
+    def close_socket(self):
         self.my_socket.close()
         print("Socket cerrado.\n")
 
 def main():
-    cliente = Cliente()
-    receive_thread = threading.Thread(target=cliente.recibir)
+    client = Client()
+    receive_thread = threading.Thread(target=client.recieve)
     receive_thread.start()
 
     while True:
-        cliente.enviar()
+        client.send()
 
-    cliente.cerrar_socket()
+    cliente.close_socket()
 
 if __name__ == "__main__":
     main()
